@@ -10,7 +10,8 @@ HouSign watches your camera in the background, detects hand gestures using Media
 
 <!-- YouTube showcase video -->
 > 🎬 [Watch the demo](https://youtu.be/3JQjFe2N2d4)
-
+> 
+<img width="1904" height="997" alt="image" src="https://github.com/user-attachments/assets/e4641b5c-f410-4981-aee0-fb50d5d87919" />
 
 ---
 
@@ -33,7 +34,7 @@ Download `HouSign-Setup.exe` from [Releases](https://github.com/SmolinskiP/HouSi
 
 The installer handles everything — shortcuts, autostart option, default config.
 
-<!-- Screenshot: installer wizard -->
+<img width="1196" height="867" alt="image" src="https://github.com/user-attachments/assets/372b499b-57fa-446c-8a68-5616761df33c" />
 
 ### Option 2 — Run from source
 
@@ -56,13 +57,13 @@ On first run, open **Settings** from the tray menu and fill in:
 - **Home Assistant URL** — e.g. `http://homeassistant.local:8123/`
 - **Long-Lived Access Token** — create one in HA under Profile → Security → Long-Lived Access Tokens
 
-<!-- Screenshot: settings window — HA connection fields -->
+<img width="1875" height="409" alt="image" src="https://github.com/user-attachments/assets/048c6277-af07-48a4-b64f-0ae56a00cf55" />
 
 ### Activation gesture
 
 By default, HouSign uses an activation mode — it won't fire commands until you make a specific pose (like an open palm held for ~600ms). This prevents accidental triggers while you're just moving around. You can disable it and go always-listening if you prefer.
 
-<!-- Screenshot: activation settings tab -->
+<img width="840" height="935" alt="image" src="https://github.com/user-attachments/assets/d51c2a13-ed25-445e-8bbb-b0ab69bcdba7" />
 
 ---
 
@@ -79,7 +80,7 @@ Each binding connects a gesture to a Home Assistant action:
 | Service | `turn_off` |
 | Entity | `light.living_room` |
 
-<!-- Screenshot: bindings editor -->
+<img width="1856" height="532" alt="image" src="https://github.com/user-attachments/assets/377d0fa9-9956-4006-ad09-969c93d7976f" />
 
 Execution modes:
 - **instant** — fires once, immediately ends the session
@@ -91,7 +92,7 @@ Execution modes:
 
 The tray icon shows the current runtime state and lets you open settings, start a preview, reload config, or quit.
 
-<!-- Screenshot: tray menu -->
+<img width="233" height="196" alt="image" src="https://github.com/user-attachments/assets/c3da1005-8176-472d-bd1c-c187edd6ef0c" />
 
 ---
 
