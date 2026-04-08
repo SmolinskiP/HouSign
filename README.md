@@ -9,7 +9,8 @@ HouSign watches your camera in the background, detects hand gestures using Media
 ## 📺 See it in action
 
 <!-- YouTube showcase video -->
-> 🎬 **[Watch on YouTube](#)** *(link coming soon)*
+> 🎬 [![Watch the demo](https://img.youtube.com/vi/3JQjFe2N2d4/maxresdefault.jpg)](https://youtu.be/3JQjFe2N2d4)
+
 
 ---
 
