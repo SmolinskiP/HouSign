@@ -30,7 +30,7 @@ HouSign watches your camera in the background, detects hand gestures using Media
 
 ### Option 1 — Windows installer (recommended)
 
-Download `HouSign-Setup.exe` from [Releases](https://github.com/SmolinskiP/HouSign/releases), run it, enter your Home Assistant URL and token, done.
+Download `HouSign-Setup.exe` from [Releases](https://github.com/SmolinskiP/HouSign/releases). Direct link - [HouSign-Setup.exe](https://github.com/SmolinskiP/HouSign/releases/latest/download/HouSign-Setup.exe), run it, enter your Home Assistant URL and token, done.
 
 The installer handles everything — shortcuts, autostart option, default config.
 
