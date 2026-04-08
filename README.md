@@ -1,97 +1,125 @@
-# HA Gestures Prototype
+# HouSign — Gesture Control for Home Assistant
 
-Runtime rozpoznawania gestow dalej siedzi po stronie Pythona (`MediaPipe Hand Landmarker + nasze prymitywy + engine gestow`).
-Konfigurator GUI tez wraca do Pythona i jest teraz budowany na `flet`.
-Ustawienia aplikacji sa trzymane w `settings.json`.
+Control your smart home with hand gestures. No buttons, no voice, no phone — just a wave.
 
-## Python runtime
+HouSign watches your camera in the background, detects hand gestures using MediaPipe, and fires actions in Home Assistant the moment it recognizes what you're doing.
 
-Python odpowiada za:
+---
 
-- odczyt kamerki,
-- landmarki dloni,
-- prymitywy (`hand`, `palm_side`, `rotation`, `fingers`, `motion`),
-- skladanie `compound_id`,
-- dopasowanie nazwanych gestow z `gestures.yaml`.
+## 📺 See it in action
 
-Uruchomienie debug runtime:
+<!-- YouTube showcase video -->
+> 🎬 **[Watch on YouTube](#)** *(link coming soon)*
 
-```powershell
-python -m ha_gestures.cli --camera 0 --show --print-every 10
+---
+
+## What it does
+
+- Runs quietly in the **system tray** — starts with Windows, stays out of your way
+- Uses your **webcam** to track hand gestures in real time
+- Sends commands to **Home Assistant** via WebSocket (lights, media players, scenes, scripts — anything)
+- Supports an **activation gesture** (like a wake word, but for your hands) so it only listens when you want it to
+- Plays **sound feedback** so you know when it picked up your gesture
+- Comes with a clean **settings UI** to configure everything without touching JSON
+
+---
+
+## Getting started
+
+### Option 1 — Windows installer (recommended)
+
+Download `HouSign-Setup.exe` from [Releases](https://github.com/SmolinskiP/HouSign/releases), run it, enter your Home Assistant URL and token, done.
+
+The installer handles everything — shortcuts, autostart option, default config.
+
+<!-- Screenshot: installer wizard -->
+
+### Option 2 — Run from source
+
+```bash
+git clone https://github.com/SmolinskiP/HouSign
+cd HouSign
+python -m venv venv
+venv\Scripts\python.exe -m pip install -r requirements.txt
+python ha_gestures/app.py
 ```
 
-Nowy wspolny entrypoint aplikacji:
+Requires **Python 3.11**.
 
-```powershell
-python -m ha_gestures.app settings
-python -m ha_gestures.app preview
-python -m ha_gestures.app run
-python -m ha_gestures.app runtime
-```
+---
 
-Na Windows `run` uruchamia tray aplikacji.
-`runtime` zostaje technicznym trybem bez traya.
+## Configuration
 
-Domyslnie CLI i GUI czytaja:
+On first run, open **Settings** from the tray menu and fill in:
 
-- `settings.json`
-- `gestures.yaml`
-- `gesture_bindings.json`
+- **Home Assistant URL** — e.g. `http://homeassistant.local:8123/`
+- **Long-Lived Access Token** — create one in HA under Profile → Security → Long-Lived Access Tokens
 
-## Studio GUI (Flet)
+<!-- Screenshot: settings window — HA connection fields -->
 
-Nowy edytor jest uruchamiany jako czysta aplikacja Pythonowa:
+### Activation gesture
 
-```powershell
-python -m ha_gestures.gui
-```
+By default, HouSign uses an activation mode — it won't fire commands until you make a specific pose (like an open palm held for ~600ms). This prevents accidental triggers while you're just moving around. You can disable it and go always-listening if you prefer.
 
-Na ten moment GUI ma:
+<!-- Screenshot: activation settings tab -->
 
-- zakladki `Editor`, `Bindings`, `About`,
-- zakladki `Home Assistant` i `Runtime` do edycji `settings.json`,
-- osobny edytor lewej i prawej dloni,
-- klikalny szkielet dloni rysowany bezposrednio w `flet.canvas`,
-- sterowanie `front/back` i `0/90/180/270`,
-- przelaczanie stanu kazdego palca,
-- tryb `one hand` lub `two hands`,
-- preview `compound_id`,
-- placeholderowa akcja przypisywana do gestu,
-- liste zapisanych mapowan gest -> akcja,
-- osobna strone `About` z logo i informacjami o projekcie.
+---
 
-## Gesture bindings JSON
+## How gesture bindings work
 
-Bindingi sa zapisywane jako JSON i maja juz osobne sekcje `action` oraz `execution`.
+Each binding connects a gesture to a Home Assistant action:
 
-Przyklad:
+| Field | Example |
+|-------|---------|
+| Gesture | `open_palm` |
+| Mode | `one_hand` |
+| Action type | `service` |
+| Domain | `light` |
+| Service | `turn_off` |
+| Entity | `light.living_room` |
 
-```json
-{
-  "mode": "one_hand",
-  "trigger_id": "right_back_0_00100",
-  "gesture_name": "FUCK",
-  "action": {
-    "type": "placeholder",
-    "label": "dimm light"
-  },
-  "execution": {
-    "mode": "instant",
-    "cooldown_ms": 800,
-    "repeat_every_ms": 150
-  }
-}
-```
+<!-- Screenshot: bindings editor -->
 
-Aktualnie wspierane tryby `execution.mode`:
+Execution modes:
+- **instant** — fires once, immediately ends the session
+- **hold & repeat** — keeps firing while you hold the gesture (great for dimming)
 
-- `instant`
-- `hold_start`
-- `hold_repeat`
-- `hold_end`
+---
 
-## Python dependencies
+## System tray
 
-```powershell
-python -m pip install -r requirements.txt
-```
+The tray icon shows the current runtime state and lets you open settings, start a preview, reload config, or quit.
+
+<!-- Screenshot: tray menu -->
+
+---
+
+## Requirements
+
+- Windows 10/11 (64-bit)
+- Webcam
+- Home Assistant instance reachable on your local network
+
+---
+
+## Built with
+
+- [MediaPipe](https://developers.google.com/mediapipe) — hand tracking
+- [Flet](https://flet.dev) — settings UI
+- [pystray](https://github.com/moses-palmer/pystray) — system tray
+- [PyAudio](https://people.csail.mit.edu/hubert/pyaudio/) — sound feedback
+- [PyInstaller](https://pyinstaller.org) — Windows packaging
+
+---
+
+## Support the project
+
+If HouSign saves you a few trips to the light switch, consider buying me a coffee ☕
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-☕-yellow?style=flat-square)](https://buymeacoffee.com/smolinskip)
+
+---
+
+## License
+
+MIT — do whatever you want with it.
