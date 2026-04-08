@@ -29,6 +29,8 @@ class RecognitionSettings:
     activation_gesture_name: str = ""
     activation_hold_ms: int = 600
     session_timeout_ms: int = 4000
+    activation_sound_enabled: bool = True
+    deactivation_sound_enabled: bool = True
 
 
 @dataclass(slots=True)
@@ -86,6 +88,9 @@ def _merge_settings(settings: AppSettings, payload: dict[str, object]) -> None:
 
     recognition_payload = payload.get("recognition", {})
     if isinstance(recognition_payload, dict):
+        legacy_sound_enabled = bool(
+            recognition_payload.get("activation_sound_enabled", settings.recognition.activation_sound_enabled)
+        )
         settings.recognition.listening_mode = str(
             recognition_payload.get("listening_mode", settings.recognition.listening_mode)
         )
@@ -103,6 +108,12 @@ def _merge_settings(settings: AppSettings, payload: dict[str, object]) -> None:
         )
         settings.recognition.session_timeout_ms = int(
             recognition_payload.get("session_timeout_ms", settings.recognition.session_timeout_ms)
+        )
+        settings.recognition.activation_sound_enabled = bool(
+            recognition_payload.get("activation_sound_enabled", legacy_sound_enabled)
+        )
+        settings.recognition.deactivation_sound_enabled = bool(
+            recognition_payload.get("deactivation_sound_enabled", legacy_sound_enabled)
         )
 
     gui_payload = payload.get("gui", {})

@@ -12,12 +12,14 @@
     "mirror": true
   },
   "recognition": {
-    "listening_mode": "always_listening",
+    "listening_mode": "activation_required",
     "activation_mode": "one_hand",
-    "activation_trigger_id": "",
-    "activation_gesture_name": "",
+    "activation_trigger_id": "right_front_180_11111",
+    "activation_gesture_name": "open_palm",
     "activation_hold_ms": 600,
-    "session_timeout_ms": 4000
+    "session_timeout_ms": 4000,
+    "activation_sound_enabled": true,
+    "deactivation_sound_enabled": true
   },
   "gui": {
     "window_maximized": true

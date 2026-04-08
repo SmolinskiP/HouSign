@@ -1,3 +1,25 @@
 {
-  "bindings": []
+  "bindings": [
+    {
+      "mode": "one_hand",
+      "trigger_id": "right_front_180_11001",
+      "gesture_name": "lampa",
+      "action": {
+        "type": "service",
+        "label": "wlacz",
+        "domain": "light",
+        "service": "turn_on",
+        "target": {
+          "entity_id": "light.lampa_light"
+        },
+        "event_type": "",
+        "return_response": false
+      },
+      "execution": {
+        "mode": "instant",
+        "cooldown_ms": 800,
+        "repeat_every_ms": 150
+      }
+    }
+  ]
 }

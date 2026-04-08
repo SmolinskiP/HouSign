@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import webbrowser
 from pathlib import Path
 
@@ -242,6 +243,8 @@ class GestureStudio:
         )
         self.activation_hold_ms = ft.TextField(label="Activation hold ms", value="600")
         self.session_timeout_ms = ft.TextField(label="Session timeout ms", value="4000")
+        self.activation_sound_enabled = ft.Switch(label="Play activation sound")
+        self.deactivation_sound_enabled = ft.Switch(label="Play deactivation sound")
         self.window_maximized = ft.Switch(label="Start window maximized")
         self.mode_selector = ft.RadioGroup(
             value=self.mode,
@@ -322,6 +325,7 @@ class GestureStudio:
                                 self._tab_button("bindings", "Bindings", ft.Icons.DATA_ARRAY),
                                 self._tab_button("home_assistant", "Home Assistant", ft.Icons.HOME),
                                 self._tab_button("runtime", "Runtime", ft.Icons.TUNE),
+                                self._tab_button("activation", "Activation", ft.Icons.NOTIFICATIONS_ACTIVE),
                                 self._tab_button("debug", "Debug", ft.Icons.TERMINAL),
                                 self._tab_button("about", "About", ft.Icons.INFO_OUTLINE),
                             ],
@@ -365,6 +369,8 @@ class GestureStudio:
             return self._build_home_assistant_tab()
         if self.selected_tab == "runtime":
             return self._build_runtime_tab()
+        if self.selected_tab == "activation":
+            return self._build_activation_tab()
         if self.selected_tab == "debug":
             return self._build_debug_tab()
         if self.selected_tab == "about":
@@ -770,7 +776,6 @@ class GestureStudio:
         )
 
     def _build_runtime_tab(self) -> ft.Control:
-        activation_enabled = (self.listening_mode.value or "always_listening") == "activation_required"
         return ft.Container(
             padding=20,
             content=ft.Column(
@@ -799,6 +804,39 @@ class GestureStudio:
                             ],
                         ),
                     ),
+                    ft.Row(
+                        spacing=12,
+                        controls=[
+                            ft.ElevatedButton(
+                                "Save settings",
+                                icon=ft.Icons.SAVE,
+                                style=ft.ButtonStyle(bgcolor=ACCENT, color=TEXT),
+                                on_click=self._save_settings,
+                            ),
+                            ft.ElevatedButton(
+                                "Reload from disk",
+                                icon=ft.Icons.REFRESH,
+                                on_click=self._reload_settings,
+                            ),
+                        ],
+                    ),
+                    self._status_control(),
+                ],
+            ),
+        )
+
+    def _build_activation_tab(self) -> ft.Control:
+        activation_enabled = (self.listening_mode.value or "always_listening") == "activation_required"
+        return ft.Container(
+            padding=20,
+            content=ft.Column(
+                spacing=16,
+                controls=[
+                    ft.Text("Activation", size=24, weight=ft.FontWeight.W_700, color=TEXT),
+                    ft.Text(
+                        "Control whether gesture recognition is always on or unlocked by a dedicated activation pose, with optional sound feedback.",
+                        color=MUTED,
+                    ),
                     ft.Container(
                         padding=20,
                         border_radius=18,
@@ -823,6 +861,8 @@ class GestureStudio:
                                             self.activation_trigger_id,
                                             self.activation_hold_ms,
                                             self.session_timeout_ms,
+                                            self.activation_sound_enabled,
+                                            self.deactivation_sound_enabled,
                                             ft.Row(
                                                 spacing=12,
                                                 wrap=True,
@@ -837,6 +877,11 @@ class GestureStudio:
                                                         "Clear activation gesture",
                                                         icon=ft.Icons.CLEAR,
                                                         on_click=self._clear_activation_gesture,
+                                                    ),
+                                                    ft.ElevatedButton(
+                                                        "Open sound folder",
+                                                        icon=ft.Icons.FOLDER_OPEN,
+                                                        on_click=self._open_sound_folder,
                                                     ),
                                                 ],
                                             ),
@@ -1071,6 +1116,17 @@ class GestureStudio:
         self.activation_gesture_name.value = ""
         self.status_message = "Cleared activation gesture."
         _LOG.info("Activation gesture cleared.")
+        self._refresh_view()
+
+    def _open_sound_folder(self, _event: ft.ControlEvent) -> None:
+        sound_dir = (Path(__file__).resolve().parent / "sound").resolve()
+        try:
+            os.startfile(str(sound_dir))
+            self.status_message = f"Opened sound folder: {sound_dir}"
+            _LOG.info("Opened sound folder: %s", sound_dir)
+        except OSError as exc:
+            self.status_message = f"Failed to open sound folder: {exc}"
+            _LOG.error("Failed to open sound folder %s: %s", sound_dir, exc)
         self._refresh_view()
 
     def _apply_action_preset(self, preset_key: str, *, refresh: bool = True) -> None:
@@ -1408,6 +1464,8 @@ class GestureStudio:
         self.activation_gesture_name.value = self.settings.recognition.activation_gesture_name
         self.activation_hold_ms.value = str(self.settings.recognition.activation_hold_ms)
         self.session_timeout_ms.value = str(self.settings.recognition.session_timeout_ms)
+        self.activation_sound_enabled.value = self.settings.recognition.activation_sound_enabled
+        self.deactivation_sound_enabled.value = self.settings.recognition.deactivation_sound_enabled
         self.window_maximized.value = self.settings.gui.window_maximized
 
     def _reload_settings(self, _event: ft.ControlEvent) -> None:
@@ -1435,6 +1493,8 @@ class GestureStudio:
             self.settings.recognition.activation_gesture_name = (self.activation_gesture_name.value or "").strip()
             self.settings.recognition.activation_hold_ms = int((self.activation_hold_ms.value or "600").strip())
             self.settings.recognition.session_timeout_ms = int((self.session_timeout_ms.value or "4000").strip())
+            self.settings.recognition.activation_sound_enabled = bool(self.activation_sound_enabled.value)
+            self.settings.recognition.deactivation_sound_enabled = bool(self.deactivation_sound_enabled.value)
             self.settings.gui.window_maximized = bool(self.window_maximized.value)
         except ValueError as exc:
             self.status_message = f"Invalid settings value: {exc}"

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
+from .activation_sound import ActivationSoundPlayer
 from .action_dispatcher import ActionDispatcher, DispatchRecord
 from .bindings import BindingRegistry, GestureBinding
 from .execution import ExecutionCoordinator
@@ -29,6 +30,10 @@ class RuntimeController:
         self.execution = ExecutionCoordinator()
         self.ws_client = self._build_client(settings) if not preview_only else None
         self.dispatcher = ActionDispatcher(self.ws_client)
+        self.activation_sound = ActivationSoundPlayer(
+            activation_enabled=bool(settings.recognition.activation_sound_enabled and not preview_only),
+            deactivation_enabled=bool(settings.recognition.deactivation_sound_enabled and not preview_only),
+        )
         self.runtime = MediaPipeRuntime(
             model_path=settings.runtime.model_path,
             gestures_config_path=settings.runtime.gestures_config,
@@ -46,6 +51,7 @@ class RuntimeController:
         listening_mode = self.settings.recognition.listening_mode
         activation_hold_ms = self.settings.recognition.activation_hold_ms
         session_timeout_ms = self.settings.recognition.session_timeout_ms
+        was_armed = listening_mode != "activation_required"
 
         _LOG.info(
             "Starting runtime controller preview_only=%s camera_index=%s model=%s bindings=%s listening_mode=%s",
@@ -98,6 +104,12 @@ class RuntimeController:
                 is_armed = listening_mode != "activation_required" or (
                     armed_until_ms is not None and frame.timestamp_ms <= armed_until_ms
                 )
+                if listening_mode == "activation_required":
+                    if is_armed and not was_armed:
+                        self.activation_sound.play_activation()
+                    elif was_armed and not is_armed:
+                        self.activation_sound.play_deactivation()
+                was_armed = is_armed
                 active_binding_keys: set[tuple[str, str]] = set()
                 for gesture in frame.active_gestures:
                     gesture_mode = "two_hand" if gesture.hand == "both" else "one_hand"
