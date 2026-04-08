@@ -8,11 +8,21 @@ from pathlib import Path
 
 import flet as ft
 
-from .gui import main as gui_main
-from .log_capture import configure_process_logging
-from .mediapipe_runtime import MediaPipeRuntime
-from .runtime_controller import RuntimeController
-from .settings_store import load_settings
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from ha_gestures.gui import main as gui_main
+    from ha_gestures.log_capture import configure_process_logging
+    from ha_gestures.mediapipe_runtime import MediaPipeRuntime
+    from ha_gestures.runtime_controller import RuntimeController
+    from ha_gestures.settings_store import load_settings
+    from ha_gestures.tray import run_tray
+else:
+    from .gui import main as gui_main
+    from .log_capture import configure_process_logging
+    from .mediapipe_runtime import MediaPipeRuntime
+    from .runtime_controller import RuntimeController
+    from .settings_store import load_settings
+    from .tray import run_tray
 
 _LOG = logging.getLogger(__name__)
 
@@ -20,7 +30,7 @@ _LOG = logging.getLogger(__name__)
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="HouSign desktop entrypoint.")
     parser.add_argument("--settings", type=Path, default=Path("settings.json"), help="Path to application settings JSON.")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers = parser.add_subparsers(dest="command", required=False)
 
     subparsers.add_parser("settings", help="Open the Flet settings editor.")
 
@@ -42,6 +52,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(argv or [])
+    if argv and argv[0] in {"ha_gestures.app", "ha_gestures\\app.py", "ha_gestures/app.py", "app.py"}:
+        argv = argv[1:]
+    if not argv:
+        argv = ["run"]
     parser = build_parser()
     args = parser.parse_args(argv)
     configure_process_logging(f"app:{args.command}")
@@ -70,8 +85,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "run":
         if platform.system() == "Windows":
             _LOG.info("Windows detected, starting tray mode.")
-            from .tray import run_tray
-
             run_tray(args.settings)
             return 0
         _LOG.info("Non-Windows run command, starting runtime directly.")

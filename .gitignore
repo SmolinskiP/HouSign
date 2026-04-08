@@ -56,3 +56,6 @@ ha_gestures/logs/
 *.local.md
 *.notes.md
 *.draft.md
+
+# Imported reference scripts
+examples/
