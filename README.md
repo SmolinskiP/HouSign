@@ -69,6 +69,8 @@ By default, HouSign uses an activation mode — it won't fire commands until you
 
 ## How gesture bindings work
 
+<img width="1723" height="514" alt="image" src="https://github.com/user-attachments/assets/74063caf-30a8-4928-b1b9-f0f81253cca0" />
+
 Each binding connects a gesture to a Home Assistant action:
 
 | Field | Example |
