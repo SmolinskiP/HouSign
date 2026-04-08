@@ -20,6 +20,54 @@
         "cooldown_ms": 800,
         "repeat_every_ms": 150
       }
+    },
+    {
+      "mode": "one_hand",
+      "trigger_id": "right_back_180_11111",
+      "gesture_name": "dimm lampa",
+      "action": {
+        "type": "service",
+        "label": "",
+        "domain": "light",
+        "service": "turn_on",
+        "target": {
+          "entity_id": "light.lampa_light"
+        },
+        "data": {
+          "brightness_step_pct": -10
+        },
+        "event_type": "",
+        "return_response": false
+      },
+      "execution": {
+        "mode": "hold_repeat",
+        "cooldown_ms": 0,
+        "repeat_every_ms": 150
+      }
+    },
+    {
+      "mode": "one_hand",
+      "trigger_id": "right_back_180_00000",
+      "gesture_name": "closed_fist",
+      "action": {
+        "type": "service",
+        "label": "",
+        "domain": "light",
+        "service": "turn_on",
+        "target": {
+          "entity_id": "light.lampa_light"
+        },
+        "data": {
+          "brightness_step_pct": 10
+        },
+        "event_type": "",
+        "return_response": false
+      },
+      "execution": {
+        "mode": "hold_repeat",
+        "cooldown_ms": 0,
+        "repeat_every_ms": 150
+      }
     }
   ]
 }

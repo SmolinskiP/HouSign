@@ -128,6 +128,13 @@ class RuntimeController:
                     active_binding_keys.add((binding.mode, binding.trigger_id))
                     last_trigger_id = binding.trigger_id
                     last_binding = binding
+                    if (
+                        listening_mode == "activation_required"
+                        and self._extends_activation_session(binding)
+                        and (is_armed or was_armed)
+                    ):
+                        armed_until_ms = frame.timestamp_ms + session_timeout_ms
+                        is_armed = True
                     if self.preview_only or not is_armed:
                         continue
                     for intent in self.execution.evaluate(binding, True, frame.timestamp_ms):
@@ -188,3 +195,7 @@ class RuntimeController:
         if not configured_trigger or not configured_mode:
             return False
         return mode == configured_mode and trigger_id == configured_trigger
+
+    @staticmethod
+    def _extends_activation_session(binding: GestureBinding) -> bool:
+        return binding.execution.mode != "instant"

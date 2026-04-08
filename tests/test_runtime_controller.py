@@ -178,6 +178,106 @@ class RuntimeControllerTests(unittest.TestCase):
         self.assertEqual(controller.activation_sound.activation_count, 1)
         self.assertEqual(controller.activation_sound.deactivation_count, 1)
 
+    def test_hold_repeat_binding_extends_activation_session_while_active(self) -> None:
+        settings = default_settings()
+        settings.recognition.listening_mode = "activation_required"
+        settings.recognition.activation_mode = "one_hand"
+        settings.recognition.activation_trigger_id = "right_front_0_11111"
+        settings.recognition.activation_hold_ms = 600
+        settings.recognition.session_timeout_ms = 4000
+
+        binding = GestureBinding(
+            mode="one_hand",
+            trigger_id="right_back_0_00100",
+            gesture_name="dim_down",
+            action=GestureAction(type="placeholder", label="test"),
+            execution=GestureExecution(mode="hold_repeat", cooldown_ms=0, repeat_every_ms=100),
+        )
+
+        controller = RuntimeController(settings, preview_only=False)
+        controller.runtime = _FakeRuntime(
+            [
+                FramePrimitive(
+                    timestamp_ms=1000,
+                    hands=[],
+                    active_gestures=[
+                        ActiveGesture(
+                            name="open_palm",
+                            key="open_palm",
+                            compound_id="right_front_0_11111",
+                            hand="right",
+                            palm_side="front",
+                            rotation=0,
+                        )
+                    ],
+                ),
+                FramePrimitive(
+                    timestamp_ms=1700,
+                    hands=[],
+                    active_gestures=[
+                        ActiveGesture(
+                            name="open_palm",
+                            key="open_palm",
+                            compound_id="right_front_0_11111",
+                            hand="right",
+                            palm_side="front",
+                            rotation=0,
+                        )
+                    ],
+                ),
+                FramePrimitive(
+                    timestamp_ms=1800,
+                    hands=[],
+                    active_gestures=[
+                        ActiveGesture(
+                            name="dim_down",
+                            key="dim_down",
+                            compound_id="right_back_0_00100",
+                            hand="right",
+                            palm_side="back",
+                            rotation=0,
+                        )
+                    ],
+                ),
+                FramePrimitive(
+                    timestamp_ms=5701,
+                    hands=[],
+                    active_gestures=[
+                        ActiveGesture(
+                            name="dim_down",
+                            key="dim_down",
+                            compound_id="right_back_0_00100",
+                            hand="right",
+                            palm_side="back",
+                            rotation=0,
+                        )
+                    ],
+                ),
+                FramePrimitive(
+                    timestamp_ms=5900,
+                    hands=[],
+                    active_gestures=[
+                        ActiveGesture(
+                            name="dim_down",
+                            key="dim_down",
+                            compound_id="right_back_0_00100",
+                            hand="right",
+                            palm_side="back",
+                            rotation=0,
+                        )
+                    ],
+                ),
+            ]
+        )
+        controller.binding_registry = _FakeBindingRegistry(binding)
+        controller.activation_sound = _FakeActivationSound()
+
+        result = controller.process_stream()
+
+        self.assertEqual([item.phase for item in result.dispatched], ["hold_start", "hold_repeat", "hold_repeat", "hold_repeat"])
+        self.assertEqual(controller.activation_sound.activation_count, 1)
+        self.assertEqual(controller.activation_sound.deactivation_count, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
