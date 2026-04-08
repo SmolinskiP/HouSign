@@ -1,0 +1,18 @@
+{
+  "bindings": [
+    {
+      "mode": "one_hand",
+      "trigger_id": "right_back_0_00100",
+      "gesture_name": "FUCK",
+      "action": {
+        "type": "placeholder",
+        "label": "dimm light"
+      },
+      "execution": {
+        "mode": "instant",
+        "cooldown_ms": 800,
+        "repeat_every_ms": 150
+      }
+    }
+  ]
+}

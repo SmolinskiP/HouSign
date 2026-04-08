@@ -1,0 +1,133 @@
+gestures:
+  - key: two_hand_expand
+    kind: two_hand
+    priority: 100
+    match:
+      two_hand:
+        motion: expanding
+
+  - key: two_hand_contract
+    kind: two_hand
+    priority: 100
+    match:
+      two_hand:
+        motion: contracting
+
+  - key: swipe_left
+    kind: hand
+    priority: 90
+    match:
+      min_extended_fingers: 3
+      motion:
+        direction: right
+        min_dx: 0.08
+        min_speed: 0.12
+
+  - key: swipe_right
+    kind: hand
+    priority: 90
+    match:
+      min_extended_fingers: 3
+      motion:
+        direction: left
+        max_dx: -0.08
+        min_speed: 0.12
+
+  - key: hand_up
+    kind: hand
+    priority: 85
+    match:
+      min_extended_fingers: 3
+      motion:
+        direction: up
+        max_dy: -0.06
+        min_speed: 0.10
+
+  - key: hand_down
+    kind: hand
+    priority: 85
+    match:
+      min_extended_fingers: 3
+      motion:
+        direction: down
+        min_dy: 0.06
+        min_speed: 0.10
+
+  - key: satan
+    kind: hand
+    priority: 80
+    match:
+      fingers:
+        index: extended
+        middle: folded
+        ring: folded
+        pinky: extended
+
+  - key: fuck_you
+    kind: hand
+    priority: 75
+    match:
+      fingers:
+        thumb: extended
+        index: folded
+        middle: extended
+        ring: folded
+        pinky: folded
+
+  - key: shy_fuck_you
+    kind: hand
+    priority: 74
+    match:
+      fingers:
+        thumb: folded
+        index: folded
+        middle: extended
+        ring: folded
+        pinky: folded
+
+  - key: ok_sign
+    kind: hand
+    priority: 70
+    match:
+      hints:
+        - ok_like
+
+  - key: victory
+    kind: hand
+    priority: 68
+    match:
+      hints:
+        - victory_like
+
+  - key: point
+    kind: hand
+    priority: 66
+    match:
+      fingers:
+        thumb: folded
+        index: extended
+        middle: folded
+        ring: folded
+        pinky: folded
+
+  - key: open_palm
+    kind: hand
+    priority: 60
+    match:
+      fingers:
+        thumb: extended
+        index: extended
+        middle: extended
+        ring: extended
+        pinky: extended
+
+  - key: closed_fist
+    kind: hand
+    priority: 55
+    match:
+      fingers:
+        thumb: folded
+        index: folded
+        middle: folded
+        ring: folded
+        pinky: folded

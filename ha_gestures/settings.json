@@ -1,0 +1,25 @@
+{
+  "ha": {
+    "url": "http://192.168.0.25:8123/",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3MDY3NzMyMWQwN2E0ZjEwODIxNjhhNjM4ZGJiMDMzOSIsImlhdCI6MTc3NTU2ODE2MCwiZXhwIjoyMDkwOTI4MTYwfQ.hXtOtp5hFpViuT_r5sDD3qhpdscYLKUm4MfIgEm1s30"
+  },
+  "runtime": {
+    "camera_index": 0,
+    "model_path": "models/hand_landmarker.task",
+    "gestures_config": "gestures.yaml",
+    "bindings_config": "gesture_bindings.json",
+    "print_every": 10,
+    "mirror": true
+  },
+  "recognition": {
+    "listening_mode": "always_listening",
+    "activation_mode": "one_hand",
+    "activation_trigger_id": "",
+    "activation_gesture_name": "",
+    "activation_hold_ms": 600,
+    "session_timeout_ms": 4000
+  },
+  "gui": {
+    "window_maximized": true
+  }
+}
