@@ -10,6 +10,7 @@ from pathlib import Path
 import pystray
 from PIL import Image
 
+from .paths import app_dir
 from .status_store import load_runtime_status, save_runtime_status
 
 _LOG = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ class TrayApp:
         )
 
     def _load_icon(self) -> Image.Image:
-        logo_path = Path.cwd() / "logo.png"
+        logo_path = app_dir() / "logo.png"
         if logo_path.exists():
             return Image.open(logo_path)
         return Image.new("RGBA", (64, 64), (15, 125, 255, 255))
@@ -62,10 +63,13 @@ class TrayApp:
         return load_runtime_status().ha_state
 
     def _base_command(self) -> list[str]:
+        if getattr(sys, "frozen", False):
+            # Running as a PyInstaller bundle — sys.executable is the app itself
+            return [sys.executable, "--settings", str(self.settings_path)]
         return [sys.executable, "-m", "ha_gestures.app", "--settings", str(self.settings_path)]
 
     def _spawn(self, command: list[str]) -> subprocess.Popen[str]:
-        return subprocess.Popen(command, cwd=str(Path.cwd()), text=True)
+        return subprocess.Popen(command, cwd=str(app_dir()), text=True)
 
     def _ensure_menu_refresh(self) -> None:
         try:
@@ -79,6 +83,17 @@ class TrayApp:
 
     def _refresh_loop(self) -> None:
         while not self._stop_event.wait(1.5):
+            # Auto-restart runtime if it crashed unexpectedly
+            if (
+                not self._stop_event.is_set()
+                and self._preview_process is None
+                and self._runtime_process is not None
+                and self._runtime_process.poll() is not None
+            ):
+                _LOG.warning("Runtime process exited unexpectedly, restarting in 3s...")
+                self._stop_event.wait(3)
+                if not self._stop_event.is_set():
+                    self._start_runtime_worker()
             self._ensure_menu_refresh()
 
     def _start_runtime_worker(self) -> None:

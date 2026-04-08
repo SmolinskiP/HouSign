@@ -1,39 +1,66 @@
-#define AppName "HouSign"
-#define AppVersion "0.9.1"
-#define AppPublisher "HouSign"
-#define AppExeName "HouSign.exe"
+#ifndef AppName
+  #define AppName "HouSign"
+#endif
+#ifndef AppVersion
+  #define AppVersion "0.9.1"
+#endif
+#ifndef AppExeName
+  #define AppExeName "HouSign.exe"
+#endif
+#ifndef OutputBaseFilename
+  #define OutputBaseFilename "HouSign-Setup"
+#endif
+#ifndef SourceDir
+  #define SourceDir "..\dist\HouSign"
+#endif
+#define AppPublisher "Patryk Smoliński"
+#define AppURL "https://github.com/SmolinskiP/HouSign"
 
 [Setup]
 AppId={{8B6952E7-4B0C-4E76-882A-219C5182C5E1}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
+AppPublisherURL={#AppURL}
+AppSupportURL={#AppURL}
+AppUpdatesURL={#AppURL}
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
 OutputDir=..\dist\installer
-OutputBaseFilename=HouSign-Setup
+OutputBaseFilename={#OutputBaseFilename}
+SetupIconFile=..\logo.ico
+WizardImageFile=assets\wizard_sidebar.bmp
+WizardSmallImageFile=assets\wizard_small.bmp
+UninstallDisplayIcon={app}\{#AppExeName}
+LicenseFile=..\LICENSE.txt
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
-UninstallDisplayIcon={app}\{#AppExeName}
+PrivilegesRequired=lowest
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"
+Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional shortcuts:"
+Name: "autostart"; Description: "Start HouSign automatically when &Windows starts"; GroupDescription: "Startup:"
 
 [Files]
-Source: "..\dist\HouSign\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExeName}"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\{#AppExeName}"
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\{#AppExeName}"; Tasks: desktopicon
+
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#AppName}"; ValueData: "{app}\{#AppExeName}"; Tasks: autostart; Flags: uninsdeletevalue
 
 [Run]
 Filename: "{app}\{#AppExeName}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent
+Filename: "{#AppURL}"; Description: "Visit GitHub Repository"; Flags: shellexec skipifsilent postinstall unchecked
+Filename: "https://buymeacoffee.com/smolinskip"; Description: "Buy Developer a Coffee"; Flags: shellexec skipifsilent postinstall unchecked
 
 [Code]
 var
@@ -79,7 +106,10 @@ begin
     '    "activation_hold_ms": 600,' + #13#10 +
     '    "session_timeout_ms": 4000,' + #13#10 +
     '    "activation_sound_enabled": true,' + #13#10 +
-    '    "deactivation_sound_enabled": true' + #13#10 +
+    '    "deactivation_sound_enabled": true,' + #13#10 +
+    '    "gesture_sound_enabled": true,' + #13#10 +
+    '    "gesture_hold_ms": 140,' + #13#10 +
+    '    "gesture_gap_tolerance_ms": 100' + #13#10 +
     '  },' + #13#10 +
     '  "gui": {' + #13#10 +
     '    "window_maximized": true' + #13#10 +
@@ -88,38 +118,21 @@ begin
 end;
 
 procedure InitializeWizard;
-var
-  InfoText: TNewStaticText;
 begin
   ConfigPage :=
     CreateInputQueryPage(
       wpSelectTasks,
       'Home Assistant Setup',
       'Provide your Home Assistant connection details',
-      'Enter the Home Assistant URL and a Long-Lived Access Token. ' +
-      'You can leave them blank and configure everything later from the app settings window.'
+      'You can leave these blank and configure them later from the app settings window.' + #13#10 +
+      'To get a token: HA Profile → Security → Long-Lived Access Tokens → Create Token.'
     );
 
-  ConfigPage.Add('Home Assistant URL', False);
-  ConfigPage.Add('Long-Lived Access Token', False);
+  ConfigPage.Add('Home Assistant URL:', False);
+  ConfigPage.Add('Long-Lived Access Token:', False);
 
   ConfigPage.Values[0] := 'http://homeassistant.local:8123/';
   ConfigPage.Values[1] := '';
-
-  InfoText := TNewStaticText.Create(ConfigPage);
-  InfoText.Parent := ConfigPage.Surface;
-  InfoText.Left := 0;
-  InfoText.Top := 110;
-  InfoText.Width := ConfigPage.SurfaceWidth;
-  InfoText.Height := 90;
-  InfoText.AutoSize := False;
-  InfoText.WordWrap := True;
-  InfoText.Caption :=
-    'How to create the token:' + #13#10 +
-    '1. Open Home Assistant and go to your user profile.' + #13#10 +
-    '2. Scroll to Long-Lived Access Tokens.' + #13#10 +
-    '3. Create a new token for HouSign and paste it here.' + #13#10 +
-    '4. If you skip this step now, you can edit settings.json or use the Settings screen later.';
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);

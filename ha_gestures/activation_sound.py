@@ -9,12 +9,15 @@ _LOG = logging.getLogger(__name__)
 
 
 class ActivationSoundPlayer:
-    def __init__(self, *, activation_enabled: bool = True, deactivation_enabled: bool = True) -> None:
+    def __init__(self, *, activation_enabled: bool = True, deactivation_enabled: bool = True, gesture_enabled: bool = True) -> None:
         self.activation_enabled = activation_enabled
         self.deactivation_enabled = deactivation_enabled
+        self.gesture_enabled = gesture_enabled
         self._warned_missing_dependency = False
         self._warned_runtime_failure = False
         self._sound_dir = Path(__file__).resolve().parent / "sound"
+        self._gesture_last_played_ms: int = 0
+        self._gesture_cooldown_ms: int = 1500
 
     def play_activation(self) -> None:
         if not self.activation_enabled:
@@ -25,6 +28,14 @@ class ActivationSoundPlayer:
         if not self.deactivation_enabled:
             return
         self._play_async("deactivation.wav")
+
+    def play_gesture_detected(self, timestamp_ms: int) -> None:
+        if not self.gesture_enabled:
+            return
+        if timestamp_ms - self._gesture_last_played_ms < self._gesture_cooldown_ms:
+            return
+        self._gesture_last_played_ms = timestamp_ms
+        self._play_async("gesture_detection.wav")
 
     def _play_async(self, filename: str) -> None:
         threading.Thread(target=self._play_file, args=(filename,), daemon=True).start()

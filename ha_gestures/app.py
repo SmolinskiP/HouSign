@@ -13,6 +13,7 @@ if __package__ in (None, ""):
     from ha_gestures.gui import main as gui_main
     from ha_gestures.log_capture import configure_process_logging
     from ha_gestures.mediapipe_runtime import MediaPipeRuntime
+    from ha_gestures.paths import app_dir
     from ha_gestures.runtime_controller import RuntimeController
     from ha_gestures.settings_store import load_settings
     from ha_gestures.tray import run_tray
@@ -20,6 +21,7 @@ else:
     from .gui import main as gui_main
     from .log_capture import configure_process_logging
     from .mediapipe_runtime import MediaPipeRuntime
+    from .paths import app_dir
     from .runtime_controller import RuntimeController
     from .settings_store import load_settings
     from .tray import run_tray
@@ -60,6 +62,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     configure_process_logging(f"app:{args.command}")
+    if not args.settings.is_absolute():
+        args.settings = app_dir() / args.settings
     _LOG.info("Application entrypoint command=%s settings=%s", args.command, args.settings)
     settings = load_settings(args.settings)
 

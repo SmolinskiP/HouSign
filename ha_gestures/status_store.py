@@ -5,7 +5,9 @@ import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-STATUS_PATH = Path.cwd() / "logs" / "runtime_status.json"
+from .paths import app_dir
+
+STATUS_PATH = app_dir() / "logs" / "runtime_status.json"
 
 
 @dataclass(slots=True)

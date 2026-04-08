@@ -7,7 +7,13 @@ from pathlib import Path
 from typing import TextIO
 
 _CONFIGURED = False
-_LOG_DIR = Path.cwd() / "logs"
+
+# Resolve at import time — never use cwd() which breaks on Windows autostart
+if getattr(sys, "frozen", False):
+    _LOG_DIR = Path(sys.executable).resolve().parent / "logs"
+else:
+    _LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
+
 _LOG_FILE = _LOG_DIR / "housign.log"
 
 
@@ -19,15 +25,17 @@ class _TeeStream:
     def write(self, data: str) -> int:
         if not data:
             return 0
-        self._original.write(data)
-        self._original.flush()
+        if self._original is not None:
+            self._original.write(data)
+            self._original.flush()
         self._log_path.parent.mkdir(parents=True, exist_ok=True)
         with self._log_path.open("a", encoding="utf-8") as handle:
             handle.write(data)
         return len(data)
 
     def flush(self) -> None:
-        self._original.flush()
+        if self._original is not None:
+            self._original.flush()
 
     def isatty(self) -> bool:
         return getattr(self._original, "isatty", lambda: False)()
@@ -39,6 +47,8 @@ def configure_process_logging(process_name: str) -> Path:
         return _LOG_FILE
 
     _LOG_DIR.mkdir(parents=True, exist_ok=True)
+    if process_name == "app:run":
+        _LOG_FILE.write_text("", encoding="utf-8")  # clear only on main tray startup
     sys.stdout = _TeeStream(sys.__stdout__, _LOG_FILE)
     sys.stderr = _TeeStream(sys.__stderr__, _LOG_FILE)
     logging.basicConfig(

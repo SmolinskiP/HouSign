@@ -31,13 +31,14 @@ if exist "%PROJECT_DIR%\build" rmdir /s /q "%PROJECT_DIR%\build"
 if exist "%APP_DIR%" rmdir /s /q "%APP_DIR%"
 echo.
 
-echo [3/4] Building console version with PyInstaller...
+echo [3/5] Building console version with PyInstaller...
 "%VENV_PYTHON%" -m PyInstaller ^
   --noconfirm ^
   --clean ^
   --console ^
   --onedir ^
   --name "%APP_NAME%" ^
+  --icon "%PROJECT_DIR%\logo.ico" ^
   --collect-all flet ^
   --collect-all mediapipe ^
   --hidden-import pystray ^
@@ -50,21 +51,38 @@ echo [3/4] Building console version with PyInstaller...
   --add-data "%PROJECT_DIR%\gestures.yaml;." ^
   --add-data "%PROJECT_DIR%\gesture_bindings.json;." ^
   --add-data "%PROJECT_DIR%\logo.png;." ^
+  --add-data "%PROJECT_DIR%\logo.ico;." ^
   "%PROJECT_DIR%\ha_gestures\app.py"
 if errorlevel 1 exit /b 1
 echo.
 
-echo [4/4] Copying runtime assets next to the executable...
+echo [4/5] Copying runtime assets next to the executable...
 if not exist "%APP_DIR%\models" mkdir "%APP_DIR%\models"
 copy /Y "%PROJECT_DIR%\settings.json" "%APP_DIR%\settings.json" >nul
 copy /Y "%PROJECT_DIR%\gestures.yaml" "%APP_DIR%\gestures.yaml" >nul
 copy /Y "%PROJECT_DIR%\gesture_bindings.json" "%APP_DIR%\gesture_bindings.json" >nul
 copy /Y "%PROJECT_DIR%\logo.png" "%APP_DIR%\logo.png" >nul
+copy /Y "%PROJECT_DIR%\logo.ico" "%APP_DIR%\logo.ico" >nul
 copy /Y "%PROJECT_DIR%\models\hand_landmarker.task" "%APP_DIR%\models\hand_landmarker.task" >nul
 echo.
 
+echo [5/5] Optional installer build...
+set "INNO_SCRIPT=%PROJECT_DIR%\scripts\setup.iss"
+set "ISCC_EXE=C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+if exist "%ISCC_EXE%" (
+    "%ISCC_EXE%" "%INNO_SCRIPT%" ^
+      /DAppName="HouSign-Debug" ^
+      /DAppExeName="HouSign-Debug.exe" ^
+      /DOutputBaseFilename="HouSign-Debug-Setup" ^
+      /DSourceDir="%DIST_DIR%\HouSign-Debug"
+) else (
+    echo Inno Setup not found at "%ISCC_EXE%", skipping installer.
+)
+
+echo.
 echo Debug build output:
 echo   %APP_DIR%
+if exist "%DIST_DIR%\installer\HouSign-Debug-Setup.exe" echo   %DIST_DIR%\installer\HouSign-Debug-Setup.exe
 echo.
 echo Run it from Command Prompt to see logs:
 echo   "%APP_DIR%\%APP_NAME%.exe" settings

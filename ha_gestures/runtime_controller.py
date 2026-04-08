@@ -33,6 +33,7 @@ class RuntimeController:
         self.activation_sound = ActivationSoundPlayer(
             activation_enabled=bool(settings.recognition.activation_sound_enabled and not preview_only),
             deactivation_enabled=bool(settings.recognition.deactivation_sound_enabled and not preview_only),
+            gesture_enabled=bool(settings.recognition.gesture_sound_enabled and not preview_only),
         )
         self.runtime = MediaPipeRuntime(
             model_path=settings.runtime.model_path,
@@ -52,6 +53,11 @@ class RuntimeController:
         activation_hold_ms = self.settings.recognition.activation_hold_ms
         session_timeout_ms = self.settings.recognition.session_timeout_ms
         was_armed = listening_mode != "activation_required"
+        prev_binding_keys: set[tuple[str, str]] = set()
+        gesture_accum_ms: dict[tuple[str, str], int] = {}
+        gesture_last_seen_ms: dict[tuple[str, str], int] = {}
+        gesture_hold_ms = self.settings.recognition.gesture_hold_ms
+        gesture_gap_tolerance_ms = self.settings.recognition.gesture_gap_tolerance_ms
 
         _LOG.info(
             "Starting runtime controller preview_only=%s camera_index=%s model=%s bindings=%s listening_mode=%s",
@@ -125,9 +131,23 @@ class RuntimeController:
                         binding.mode,
                         gesture.compound_id,
                     )
-                    active_binding_keys.add((binding.mode, binding.trigger_id))
+                    key = (binding.mode, binding.trigger_id)
+                    active_binding_keys.add(key)
+                    if key in gesture_last_seen_ms:
+                        gap = frame.timestamp_ms - gesture_last_seen_ms[key]
+                        if gap <= gesture_gap_tolerance_ms:
+                            gesture_accum_ms[key] = gesture_accum_ms.get(key, 0) + gap
+                        else:
+                            gesture_accum_ms[key] = 0
+                    else:
+                        gesture_accum_ms[key] = 0
+                    gesture_last_seen_ms[key] = frame.timestamp_ms
+                    if gesture_accum_ms[key] < gesture_hold_ms:
+                        continue
                     last_trigger_id = binding.trigger_id
                     last_binding = binding
+                    if binding.execution.mode != "instant" and key not in prev_binding_keys:
+                        self.activation_sound.play_gesture_detected(frame.timestamp_ms)
                     if (
                         listening_mode == "activation_required"
                         and self._extends_activation_session(binding)
@@ -137,9 +157,19 @@ class RuntimeController:
                         is_armed = True
                     if self.preview_only or not is_armed:
                         continue
+                    instant_dispatched = False
                     for intent in self.execution.evaluate(binding, True, frame.timestamp_ms):
                         dispatched.append(self.dispatcher.dispatch(intent.binding, intent.phase, timestamp_ms=frame.timestamp_ms))
+                        if binding.execution.mode == "instant":
+                            instant_dispatched = True
+                    if instant_dispatched and listening_mode == "activation_required":
+                        armed_until_ms = frame.timestamp_ms - 1
 
+                prev_binding_keys = active_binding_keys
+                stale_keys = {k for k, t in gesture_last_seen_ms.items() if frame.timestamp_ms - t > gesture_gap_tolerance_ms}
+                for k in stale_keys:
+                    gesture_last_seen_ms.pop(k, None)
+                    gesture_accum_ms.pop(k, None)
                 for binding in self.binding_registry.all():
                     key = (binding.mode, binding.trigger_id)
                     if key in active_binding_keys:

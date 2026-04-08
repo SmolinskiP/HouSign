@@ -31,6 +31,9 @@ class RecognitionSettings:
     session_timeout_ms: int = 4000
     activation_sound_enabled: bool = True
     deactivation_sound_enabled: bool = True
+    gesture_sound_enabled: bool = True
+    gesture_hold_ms: int = 140
+    gesture_gap_tolerance_ms: int = 100
 
 
 @dataclass(slots=True)
@@ -114,6 +117,15 @@ def _merge_settings(settings: AppSettings, payload: dict[str, object]) -> None:
         )
         settings.recognition.deactivation_sound_enabled = bool(
             recognition_payload.get("deactivation_sound_enabled", legacy_sound_enabled)
+        )
+        settings.recognition.gesture_sound_enabled = bool(
+            recognition_payload.get("gesture_sound_enabled", settings.recognition.gesture_sound_enabled)
+        )
+        settings.recognition.gesture_hold_ms = int(
+            recognition_payload.get("gesture_hold_ms", settings.recognition.gesture_hold_ms)
+        )
+        settings.recognition.gesture_gap_tolerance_ms = int(
+            recognition_payload.get("gesture_gap_tolerance_ms", settings.recognition.gesture_gap_tolerance_ms)
         )
 
     gui_payload = payload.get("gui", {})

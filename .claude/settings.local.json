@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c \"dir C:\\\\HA_Gestures\\\\examples /b 2>&1\")",
+      "Bash(powershell -Command \"Get-ChildItem 'C:\\\\HA_Gestures' -Directory | Select-Object Name\")",
+      "Bash(powershell -Command \"Get-ChildItem 'C:\\\\HA_Gestures\\\\examples' -Recurse | Select-Object FullName\")",
+      "Bash(powershell -Command \"& 'C:\\\\HA_Gestures\\\\venv\\\\Scripts\\\\python.exe' 'C:\\\\HA_Gestures\\\\scripts\\\\gen_installer_images.py'\")",
+      "Bash(powershell -Command \"& 'C:\\\\HA_Gestures\\\\venv\\\\Scripts\\\\python.exe' -c 'import pydub' 2>&1; ffmpeg -version 2>&1 | Select-Object -First 1\")",
+      "Bash(powershell -Command ':*)"
+    ]
+  }
+}

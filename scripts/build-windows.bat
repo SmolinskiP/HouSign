@@ -39,6 +39,7 @@ echo [3/5] Building standalone app with PyInstaller...
   --windowed ^
   --onedir ^
   --name "%APP_NAME%" ^
+  --icon "%PROJECT_DIR%\logo.ico" ^
   --collect-all flet ^
   --collect-all mediapipe ^
   --hidden-import pystray ^
@@ -51,6 +52,7 @@ echo [3/5] Building standalone app with PyInstaller...
   --add-data "%PROJECT_DIR%\gestures.yaml;." ^
   --add-data "%PROJECT_DIR%\gesture_bindings.json;." ^
   --add-data "%PROJECT_DIR%\logo.png;." ^
+  --add-data "%PROJECT_DIR%\logo.ico;." ^
   "%PROJECT_DIR%\ha_gestures\app.py"
 if errorlevel 1 exit /b 1
 echo.

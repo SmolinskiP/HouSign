@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('C:\\HA_Gestures\\models', 'models'), ('C:\\HA_Gestures\\ha_gestures\\sound', 'ha_gestures\\sound'), ('C:\\HA_Gestures\\settings.json', '.'), ('C:\\HA_Gestures\\gestures.yaml', '.'), ('C:\\HA_Gestures\\gesture_bindings.json', '.'), ('C:\\HA_Gestures\\logo.png', '.')]
+datas = [('C:\\HA_Gestures\\models', 'models'), ('C:\\HA_Gestures\\ha_gestures\\sound', 'ha_gestures\\sound'), ('C:\\HA_Gestures\\settings.json', '.'), ('C:\\HA_Gestures\\gestures.yaml', '.'), ('C:\\HA_Gestures\\gesture_bindings.json', '.'), ('C:\\HA_Gestures\\logo.png', '.'), ('C:\\HA_Gestures\\logo.ico', '.')]
 binaries = []
 hiddenimports = ['pystray', 'pyaudio', 'websockets.sync.client', 'PIL']
 tmp_ret = collect_all('flet')
@@ -41,6 +41,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['C:\\HA_Gestures\\logo.ico'],
 )
 coll = COLLECT(
     exe,

@@ -23,6 +23,7 @@ from .gui_state import (
     resolve_preview,
 )
 from .log_capture import get_log_path
+from .paths import app_dir
 from .settings_store import load_settings
 from .ws_client import HomeAssistantConnectionSettings, HomeAssistantWsClient, HomeAssistantWsError
 
@@ -147,10 +148,10 @@ ACTION_PRESETS: dict[str, dict[str, object]] = {
 class GestureStudio:
     def __init__(self, page: ft.Page) -> None:
         self.page = page
-        self.settings_path = (Path.cwd() / "settings.json").resolve()
+        self.settings_path = (app_dir() / "settings.json").resolve()
         self.settings = load_settings(self.settings_path)
-        self.gestures_path = str((Path.cwd() / self.settings.runtime.gestures_config).resolve())
-        self.bindings_path = (Path.cwd() / self.settings.runtime.bindings_config).resolve()
+        self.gestures_path = str((app_dir() / self.settings.runtime.gestures_config).resolve())
+        self.bindings_path = (app_dir() / self.settings.runtime.bindings_config).resolve()
         self.left_hand = default_hand_state("left")
         self.right_hand = default_hand_state("right")
         self.mode = "one_hand"
@@ -243,8 +244,11 @@ class GestureStudio:
         )
         self.activation_hold_ms = ft.TextField(label="Activation hold ms", value="600")
         self.session_timeout_ms = ft.TextField(label="Session timeout ms", value="4000")
+        self.gesture_hold_ms = ft.TextField(label="Gesture hold ms", value="140")
+        self.gesture_gap_tolerance_ms = ft.TextField(label="Gesture gap tolerance ms", value="100")
         self.activation_sound_enabled = ft.Switch(label="Play activation sound")
         self.deactivation_sound_enabled = ft.Switch(label="Play deactivation sound")
+        self.gesture_sound_enabled = ft.Switch(label="Play gesture detection sound")
         self.window_maximized = ft.Switch(label="Start window maximized")
         self.mode_selector = ft.RadioGroup(
             value=self.mode,
@@ -296,7 +300,7 @@ class GestureStudio:
         self.page.padding = 16
         self.page.scroll = ft.ScrollMode.AUTO
         try:
-            self.page.window.icon = str((Path.cwd() / "logo.png").resolve())
+            self.page.window.icon = str((app_dir() / "logo.png").resolve())
             self.page.window.maximized = self.settings.gui.window_maximized
             self.page.window.min_width = 1280
             self.page.window.min_height = 860
@@ -861,8 +865,11 @@ class GestureStudio:
                                             self.activation_trigger_id,
                                             self.activation_hold_ms,
                                             self.session_timeout_ms,
+                                            self.gesture_hold_ms,
+                                            self.gesture_gap_tolerance_ms,
                                             self.activation_sound_enabled,
                                             self.deactivation_sound_enabled,
+                                            self.gesture_sound_enabled,
                                             ft.Row(
                                                 spacing=12,
                                                 wrap=True,
@@ -940,7 +947,7 @@ class GestureStudio:
         )
 
     def _build_about_tab(self) -> ft.Control:
-        logo_path = Path.cwd() / "logo.png"
+        logo_path = app_dir() / "logo.png"
         logo = ft.Image(src=str(logo_path.resolve()), width=164, height=164, fit=ft.BoxFit.CONTAIN) if logo_path.exists() else ft.Icon(ft.Icons.GESTURE, size=96, color=ACCENT)
 
         created_by_card = ft.Card(
@@ -1464,15 +1471,18 @@ class GestureStudio:
         self.activation_gesture_name.value = self.settings.recognition.activation_gesture_name
         self.activation_hold_ms.value = str(self.settings.recognition.activation_hold_ms)
         self.session_timeout_ms.value = str(self.settings.recognition.session_timeout_ms)
+        self.gesture_hold_ms.value = str(self.settings.recognition.gesture_hold_ms)
+        self.gesture_gap_tolerance_ms.value = str(self.settings.recognition.gesture_gap_tolerance_ms)
         self.activation_sound_enabled.value = self.settings.recognition.activation_sound_enabled
         self.deactivation_sound_enabled.value = self.settings.recognition.deactivation_sound_enabled
+        self.gesture_sound_enabled.value = self.settings.recognition.gesture_sound_enabled
         self.window_maximized.value = self.settings.gui.window_maximized
 
     def _reload_settings(self, _event: ft.ControlEvent) -> None:
         self.settings = load_settings(self.settings_path)
         self._load_settings_into_controls()
-        self.gestures_path = str((Path.cwd() / self.settings.runtime.gestures_config).resolve())
-        self.bindings_path = (Path.cwd() / self.settings.runtime.bindings_config).resolve()
+        self.gestures_path = str((app_dir() / self.settings.runtime.gestures_config).resolve())
+        self.bindings_path = (app_dir() / self.settings.runtime.bindings_config).resolve()
         self._load_bindings()
         self.status_message = f"Reloaded settings from {self.settings_path}"
         self.post_mount()
@@ -1493,8 +1503,11 @@ class GestureStudio:
             self.settings.recognition.activation_gesture_name = (self.activation_gesture_name.value or "").strip()
             self.settings.recognition.activation_hold_ms = int((self.activation_hold_ms.value or "600").strip())
             self.settings.recognition.session_timeout_ms = int((self.session_timeout_ms.value or "4000").strip())
+            self.settings.recognition.gesture_hold_ms = int((self.gesture_hold_ms.value or "140").strip())
+            self.settings.recognition.gesture_gap_tolerance_ms = int((self.gesture_gap_tolerance_ms.value or "100").strip())
             self.settings.recognition.activation_sound_enabled = bool(self.activation_sound_enabled.value)
             self.settings.recognition.deactivation_sound_enabled = bool(self.deactivation_sound_enabled.value)
+            self.settings.recognition.gesture_sound_enabled = bool(self.gesture_sound_enabled.value)
             self.settings.gui.window_maximized = bool(self.window_maximized.value)
         except ValueError as exc:
             self.status_message = f"Invalid settings value: {exc}"
@@ -1504,8 +1517,8 @@ class GestureStudio:
         from .settings_store import save_settings
 
         save_settings(self.settings, self.settings_path)
-        self.gestures_path = str((Path.cwd() / self.settings.runtime.gestures_config).resolve())
-        self.bindings_path = (Path.cwd() / self.settings.runtime.bindings_config).resolve()
+        self.gestures_path = str((app_dir() / self.settings.runtime.gestures_config).resolve())
+        self.bindings_path = (app_dir() / self.settings.runtime.bindings_config).resolve()
         self._load_bindings()
         self.status_message = f"Saved settings to {self.settings_path}"
         _LOG.info("Saved settings to %s", self.settings_path)
